@@ -1,0 +1,9 @@
+debug/
+release/
+builds/
+*.stash
+*.pro.user
+*.pro.user.*
+*.autosave
+*.user*
+*.user

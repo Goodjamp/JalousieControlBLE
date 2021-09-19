@@ -1,0 +1,22 @@
+QPushButton
+{
+    background-color: rgb(154, 0, 154);
+    font-family: "Segoe UI";
+        font-size: 20pt;
+        font-weight: 500;
+        color: rgb(0, 0, 0);
+        border-radius: 50px;
+    border-width: 2px;
+}
+
+
+QPushButton:hover:pressed
+{
+        background-color: rgb(255, 0, 120);
+    font-family: "Segoe UI";
+        font-size: 20pt;
+        font-weight: 500;
+        color: rgb(0, 0, 0);
+        border-radius: 50px;
+    border-width: 2px;
+}
