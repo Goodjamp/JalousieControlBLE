@@ -2,26 +2,36 @@
 #include "ui_mainwindow.h"
 
 #include "QTableWidgetItem"
+#include "QString"
+#include "QVector"
+#include "QDebug"
+
 #include "QtBluetooth/QBluetoothDeviceDiscoveryAgent"
 #include "QtBluetooth/QLowEnergyController"
 #include "QtBluetooth/QLowEnergyService"
 #include "QtBluetooth/QLowEnergyCharacteristic"
 #include "QUuid"
-#include "QDebug"
+
+#include "blecustomdiscovery.h"
+#include "blecustomdevice.h"
+#include "blecustomservice.h"
+
+QVector<quint128> servicesList = {{0x00, 0x0f, 0x10, 0x00, 0x0c, 0x0b, 0x0a, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01},
+                                 {0x01, 0x0f, 0x20, 0x00, 0x0c, 0x0b, 0x0a, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01}};
+
+int temp = 0;
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    bleDescoverAgent = new QBluetoothDeviceDiscoveryAgent(this);
-    connect(bleDescoverAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered, this, &MainWindow::addDevice);
-    ui->tableScanRez->insertColumn(0);
-    qDebug()<<"Table widjet geom"<<ui->tableScanRez->width();
-    qDebug()<<"Table widjet size"<<ui->tableScanRez->width();
-    ui->tableScanRez->horizontalHeader()->setMaximumSectionSize(ui->tableScanRez->width());
-    ui->tableScanRez->horizontalHeader()->setMinimumSectionSize(ui->tableScanRez->width());
-    ui->tableWidgetServises->insertColumn(0);
-    ui->tableWidgetServises->horizontalHeader()->setMinimumSectionSize(400);
-    ui->tableWidgetServises->horizontalHeader()->setMaximumSectionSize(400);
+    connect(&bleCustomDiscovery, &BleCustomDiscovery::bleCustomDiscoveryDiscoveredComplete, this, &MainWindow::bleDevicesDiscoverComplete);
+
+    /*
+     * Next codde used only for the test, remove
+     */
+    jalousieList.insert(temp, new JalousieItem(static_cast<void *>(&temp), this));
+    static_cast<QHBoxLayout*>(ui->jalListLayout->layout())->insertWidget(0,
+                                                                         jalousieList.value(temp));
 }
 
 MainWindow::~MainWindow()
@@ -29,142 +39,96 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::addDevice(const QBluetoothDeviceInfo &device)
+void MainWindow::bleDevicesDiscoverComplete(BleCustomDiscovery::Status status, QVector<QBluetoothDeviceInfo> devices)
 {
-
-    if (device.coreConfigurations() & QBluetoothDeviceInfo::LowEnergyCoreConfiguration) {
-        ui->tableScanRez->insertRow(devicesArroundList.size());
-        ui->tableScanRez->setItem(devicesArroundList.size(), 0, new QTableWidgetItem(device.name()));
-        devicesArroundList.push_back(device);
-        qDebug()<<"Device ser cnt"<<device.serviceUuids().size();
-        foreach(auto item, device.serviceUuids())
-        {
-            if (item.minimumSize() == 2) {
-                qDebug()<<QBluetoothUuid::serviceClassToString(static_cast<QBluetoothUuid::ServiceClassUuid>(item.toUInt16(NULL)));
-            } else {
-                qDebug()<<item.toString();
-            }
-        }
+    qDebug()<<"Main: device"<<devices.size();
+    if (devices.size() == 0) {
+        return;
+    }
+    for (int k = 0; k < devices.size(); k++) {
+        userContextList.push_back(k);
+        bleDevicesList.push_back(new BleCustomDevice((void *)&userContextList.last(), devices[k], servicesList, this));
+        connect(bleDevicesList.last(), &BleCustomDevice::receiveData, this, &MainWindow::deviceReceiveData);
+        connect(bleDevicesList.last(), &BleCustomDevice::connectionStateChange, this, &MainWindow::deviceConnectionStateChange);
+        bleDevicesList.last()->connectToDevice();
     }
 }
 
-
-void MainWindow::on_pushButton_clicked()
+void MainWindow::deviceReceiveData(void *uContext,
+                                   quint128 service,
+                                   quint128 characteristic,
+                                   QByteArray data)
 {
-    ui->tableScanRez->horizontalHeader()->setMaximumSectionSize(ui->tableScanRez->width());
-    ui->tableScanRez->horizontalHeader()->setMinimumSectionSize(ui->tableScanRez->width());
-    ui->tableWidgetServises->horizontalHeader()->setMaximumSectionSize(ui->tableWidgetServises->width());
-    ui->tableWidgetServises->horizontalHeader()->setMinimumSectionSize(ui->tableWidgetServises->width());
-    qDebug()<<"------------Start scaning---------------";
-    bleDescoverAgent->setLowEnergyDiscoveryTimeout(10000);
-    bleDescoverAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
-    devicesArroundList.clear();
+    int *inUserContext = (int *)uContext;
+
+    if (*inUserContext > bleDevicesList.size()) {
+        return;
+    }
 }
 
-void MainWindow::servConnected()
+void MainWindow::deviceConnectionStateChange(void *uContext,
+                                             BleCustomDevice::BleCustomDeviceStatus status)
 {
-    qDebug()<<"servConnected ";
-    controller->discoverServices();
-}
+    int *inUserContext = (int *)uContext;
 
-void MainWindow::servDisconnected()
-{
-    qDebug()<<"servDisconnected ";
-}
-
-void MainWindow::servStateChanged(QLowEnergyController::ControllerState state)
-{
-   qDebug()<<"Sevices ";
-}
-
-void MainWindow::servError(QLowEnergyController::Error newError)
-{
-
-}
-
-void MainWindow::servServiceDiscovered(const QBluetoothUuid &servDiscoveryFinished)
-{
-    ui->tableWidgetServises->insertRow(servisesList.size());
-    if (servDiscoveryFinished.minimumSize() == 2) {
-        ui->tableWidgetServises->setItem(servisesList.size(), 0,
-                                         new QTableWidgetItem(QBluetoothUuid::serviceClassToString(static_cast<QBluetoothUuid::ServiceClassUuid>(servDiscoveryFinished.toUInt16(NULL)))));
-        qDebug()<<QBluetoothUuid::serviceClassToString(static_cast<QBluetoothUuid::ServiceClassUuid>(servDiscoveryFinished.toUInt16(NULL)));
+    if (*inUserContext > bleDevicesList.size()) {
+        return;
+    }
+    if (status == BleCustomDevice::Ok) {
+        qDebug()<<"Main: BLE device connected "<< *inUserContext<<": "<<bleDevicesList[*inUserContext]->getBluetoothDeviceInfo()->address().toString();
     } else {
-        ui->tableWidgetServises->setItem(servisesList.size(), 0,
-                                         new QTableWidgetItem(servDiscoveryFinished.toString()));
-        qDebug()<<servDiscoveryFinished.toString();
+        qDebug()<<"Main: BLE device connected error"<<status;
     }
-
-    servisesList.push_back(servDiscoveryFinished);
+    jalousieList.insert(*inUserContext, new JalousieItem(uContext, this));
+    static_cast<QHBoxLayout*>(ui->jalListLayout->layout())->insertWidget(0,
+                                                                         jalousieList.value(*inUserContext));
+    connect(jalousieList.value(*inUserContext), &JalousieItem::posChange, this, &MainWindow::jalItemPosChange);
+    connect(jalousieList.value(*inUserContext), &JalousieItem::move, this, &MainWindow::jalItemMove);
+    connect(jalousieList.value(*inUserContext), &JalousieItem::lightOn, this, &MainWindow::jalItemLightOn);
 }
 
-void MainWindow::servDiscoveryFinished()
-{
+void MainWindow::jalItemPosChange(void *uContext, int value){
+    if (uContext == nullptr) {
+        qDebug()<<"Main: pos change slot error: nullptr";
+        return;
+    }
+    qDebug()<<"Main: set pos value"<<value;
 
-}
+    int *inUserContext = (int *)uContext;
 
-void MainWindow::on_tableScanRez_cellClicked(int row, int column)
-{
-    qDebug()<<"Connect to device"<<devicesArroundList[row].name();
-    controller = QLowEnergyController::createCentral(devicesArroundList[row], this);
-    connect(controller, &QLowEnergyController::connected,
-            this, &MainWindow::servConnected);
-    connect(controller, &QLowEnergyController::disconnected,
-            this, &MainWindow::servDisconnected);
-    connect(controller, &QLowEnergyController::serviceDiscovered,
-            this, &MainWindow::servServiceDiscovered);
-    connect(controller, &QLowEnergyController::discoveryFinished,
-            this, &MainWindow::servDiscoveryFinished);
-
-    controller->connectToDevice();
-    servisesList.clear();
-    ui->tableWidgetServises->setRowCount(0);
-}
-
-void MainWindow::serviceDetailsDiscovered(QLowEnergyService::ServiceState newState)
-{
-    qDebug()<<"Servis disc comp"<<newState;
-    charsList = service->characteristics();
-    qDebug()<<"Char cnt"<<charsList.size();
-    for (const QLowEnergyCharacteristic &ch : charsList) {
-        qDebug()<<"Char Name"<<ch.uuid();
-        qDebug()<<"Char UUID"<<ch.name();
-        qDebug()<<"Char UUID"<<ch.properties();
+    if (*inUserContext > bleDevicesList.size()) {
+        return;
     }
 }
 
-void MainWindow::servCharRead(const QLowEnergyCharacteristic &info,
-                              const QByteArray &value)
-{
-    qDebug()<<"Read char size"<<value.size();
-    QString rezRead;
-    foreach(int val, value) {
-        rezRead += " " + QString::number(val);
+void MainWindow::jalItemMove(void *uContext, bool left){
+    if (uContext == nullptr) {
+        qDebug()<<"Main: move slot error: nullptr";
+        return;
     }
-    rezRead += "\n";
-    ui->textEditRxConsol->insertPlainText(rezRead);
+    qDebug()<<"Main: move value"<<left;
 }
 
-void MainWindow::on_tableWidgetServises_cellClicked(int row, int column)
-{
-    qDebug()<<"Connect to servise";
-    service = controller->createServiceObject(servisesList[row]);
-    connect(service, &QLowEnergyService::stateChanged,
-            this, &MainWindow::serviceDetailsDiscovered);
-    connect(service, &QLowEnergyService::characteristicRead,
-            this, &MainWindow::servCharRead);
-    service->discoverDetails();
+void MainWindow::jalItemLightOn(void *uContext, bool lightOn, QColor color){
+    if (uContext == nullptr) {
+        qDebug()<<"Main: light on slot error: nullptr";
+        return;
+    }
+    qDebug()<<"Main: light on value"<<lightOn;
+    (void)color;
 }
 
-void MainWindow::on_pushButtonReadChr_clicked()
-{
-    service->readCharacteristic(charsList[0]);
-}
 
-void MainWindow::on_pushButtonWriteChar_clicked()
+void MainWindow::on_AddDevicesButton_clicked()
 {
-    static char val = 0;
-    QByteArray data;
-    data.push_back(val++);
-    service->writeCharacteristic(charsList[0], data);
+    qDebug()<<"Main: -----Start scaning--------";
+    bleDevicesList.clear();
+    userContextList.clear();
+    for(uint32_t k = 0; k < jalousieList.size(); k++) {
+        // ToDo disconnect all connected devices
+        //jalousieList.value(k)->disconnect();
+    }
+    jalousieList.clear();
+
+    bleCustomDiscovery.startDiscovered(deviceMetaData, 5000);
 }

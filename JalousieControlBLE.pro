@@ -18,15 +18,24 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    custombledevice.cpp \
+    blecustomdevice.cpp \
+    blecustomdiscovery.cpp \
+    blecustomservice.cpp \
+    jalousieitem.cpp \
+    jalousiepaint.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
-    custombledevice.h \
+    blecustomdevice.h \
+    blecustomdiscovery.h \
+    blecustomservice.h \
+    jalousieitem.h \
+    jalousiepaint.h \
     mainwindow.h
 
 FORMS += \
+    jalousieitem.ui \
     mainwindow.ui
 
 # Default rules for deployment.

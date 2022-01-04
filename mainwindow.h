@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QVector>
 
 #include "QtBluetooth/QBluetoothDeviceDiscoveryAgent"
 #include "QtBluetooth/QLowEnergyController"
@@ -9,6 +10,12 @@
 #include "QtBluetooth/QLowEnergyCharacteristic"
 #include "QtBluetooth/QBluetoothUuid"
 
+#include "blecustomdiscovery.h"
+#include "blecustomdevice.h"
+#include "blecustomservice.h"
+#include "jalousieitem.h"
+
+#define TARGET_BLE_DEVICE_NAME    "JalousieControl"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -23,37 +30,40 @@ public:
     ~MainWindow();
 
 private slots:
-    void addDevice(const QBluetoothDeviceInfo &device);
-    /*Services discovered*/
-    void servConnected();
-    void servDisconnected();
-    void servStateChanged(QLowEnergyController::ControllerState state);
-    void servError(QLowEnergyController::Error newError);
-    void servServiceDiscovered(const QBluetoothUuid &newService);
-    void servDiscoveryFinished();
+    /*
+     * JalousieItem class slots
+     */
+    void jalItemPosChange(void *uContext, int value);
+    void jalItemMove(void *uContext, bool left);
+    void jalItemLightOn(void *uContext, bool lightOn, QColor color);
 
+    /*
+     * BleCustomDevice slots
+     */
+    void deviceReceiveData(void *uContext,
+                           quint128 service,
+                           quint128 characteristic,
+                           QByteArray data);
+    void deviceConnectionStateChange(void *uContext,
+                                     BleCustomDevice::BleCustomDeviceStatus status);
 
-    void serviceDetailsDiscovered(QLowEnergyService::ServiceState newState);
-    void servCharRead(const QLowEnergyCharacteristic &info,
-                      const QByteArray &value);
+    /*
+     * BleCustomDiscovery slots
+     */
+    void bleDevicesDiscoverComplete(BleCustomDiscovery::Status status, QVector<QBluetoothDeviceInfo> devices);
 
-    void on_tableScanRez_cellClicked(int row, int column);
-    void on_pushButton_clicked();
-
-    void on_tableWidgetServises_cellClicked(int row, int column);
-
-    void on_pushButtonReadChr_clicked();
-
-    void on_pushButtonWriteChar_clicked();
+    /*
+     * UI slots
+     */
+    void on_AddDevicesButton_clicked();
 
 private:
-    Ui::MainWindow *ui;
-    QBluetoothDeviceDiscoveryAgent *bleDescoverAgent;
-    QLowEnergyController *controller;
-    QVector<QBluetoothDeviceInfo> devicesArroundList;
-    QVector<QBluetoothUuid> servisesList;
-    QLowEnergyService *service;
-    QList<QLowEnergyCharacteristic> charsList;
+    const BleCustomDiscovery::TargtDeviceMetaData deviceMetaData = {TARGET_BLE_DEVICE_NAME};
 
+    Ui::MainWindow *ui;
+    BleCustomDiscovery bleCustomDiscovery;
+    QVector<BleCustomDevice *> bleDevicesList;
+    QVector<int> userContextList;
+    QMap<int, JalousieItem *> jalousieList;
 };
 #endif // MAINWINDOW_H

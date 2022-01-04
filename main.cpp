@@ -2,6 +2,7 @@
 
 #include <QApplication>
 #include <QFile>
+#include <QUuid>
 
 int main(int argc, char *argv[])
 {
