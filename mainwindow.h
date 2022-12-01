@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QVector>
+#include <QRgb>
 
 #include "QtBluetooth/QBluetoothDeviceDiscoveryAgent"
 #include "QtBluetooth/QLowEnergyController"
@@ -29,13 +30,37 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    /*
+     * Next code with Jcp (jalousie control protocol) descride the protocol
+     * above the BLE and must be moved to the dedicated class
+     */
+    typedef enum {
+        JcpOk,
+        JcpBuffSizeError,
+    } JcpState;
+
+    #pragma pack(push, 1)
+    typedef struct {
+        uint8_t header;
+        uint8_t on;
+        uint8_t blink;
+        uint8_t colorRed;
+        uint8_t colorGreen;
+        uint8_t colorBlue;
+    } JcpSetLightStateCommand;
+    #pragma pack(pop)
+
+    JcpState jcpSetLightState(uint8_t buff[], uint32_t *buffSize,
+                              uint8_t colorRed, uint8_t colorGreen, uint8_t colorBlue,
+                              bool on, bool blink);
+
 private slots:
     /*
      * JalousieItem class slots
      */
     void jalItemPosChange(void *uContext, int value);
     void jalItemMove(void *uContext, bool left);
-    void jalItemLightOn(void *uContext, bool lightOn, QColor color);
+    void jalItemLightOn(void *uContext, bool lightOn, QRgb color);
 
     /*
      * BleCustomDevice slots

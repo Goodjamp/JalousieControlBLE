@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>style.css</file>
+        <file>Image/BackPlane_3.png</file>
+        <file>Image/BackPlane_8.png</file>
     </qresource>
 </RCC>

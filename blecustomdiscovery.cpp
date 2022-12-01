@@ -46,7 +46,7 @@ void BleCustomDiscovery::scanError(QBluetoothDeviceDiscoveryAgent::Error error)
 void BleCustomDiscovery::scanFinished()
 {
     qDebug()<<"BleCustomDiscovery: discovery complete";
-    emit bleCustomDiscoveryDiscoveredComplete(DiscoverdCompleteOk, discoveredDevices);
+    emit bleCustomDiscoveryDiscoveredComplete(Ok, discoveredDevices);
 }
 
 void BleCustomDiscovery::discoveredDevice(const QBluetoothDeviceInfo &device)

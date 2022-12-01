@@ -4,7 +4,7 @@ QPushButton
     font-family: "Segoe UI";
         font-size: 20pt;
         font-weight: 500;
-    color: rgb(0, 0, 0);
+        color: rgb(0, 0, 0);
     border-radius: 20px;
     border-width: 2px;
 }
@@ -16,7 +16,14 @@ QPushButton:hover:pressed
     font-family: "Segoe UI";
         font-size: 20pt;
         font-weight: 500;
-    color: rgb(0, 0, 0);
+        color: rgb(0, 0, 0);
     border-radius: 20px;
     border-width: 2px;
+}
+
+QMainWindow {
+    background-image: url(:/Image/BackPlane_8.png);
+    background-position: center; /* Center the image */
+    background-repeat: no-repeat; /* Do not repeat the image */
+   background-size: cover; /* Resize the background image to cover the entire container */
 }

@@ -20,7 +20,6 @@ public:
     typedef enum {
         Ok,
         DiscoverdInProcess,
-        DiscoverdCompleteOk,
         DiscoverdCompleteError,
     } Status;
 

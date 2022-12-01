@@ -24,7 +24,9 @@ SOURCES += \
     jalousieitem.cpp \
     jalousiepaint.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    paleteform.cpp \
+    paletepaint.cpp
 
 HEADERS += \
     blecustomdevice.h \
@@ -32,11 +34,14 @@ HEADERS += \
     blecustomservice.h \
     jalousieitem.h \
     jalousiepaint.h \
-    mainwindow.h
+    mainwindow.h \
+    paleteform.h \
+    paletepaint.h
 
 FORMS += \
     jalousieitem.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    paleteform.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

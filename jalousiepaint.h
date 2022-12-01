@@ -12,8 +12,8 @@ class JalousiePaint: public QWidget
 public:
     JalousiePaint(QWidget *parent = 0);
     ~JalousiePaint();
-    bool setEngle(int inAngle);
 
+    bool setEngle(int inAngle);
 
 protected:
     void mouseMoveEvent(QMouseEvent *event);

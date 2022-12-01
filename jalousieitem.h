@@ -2,9 +2,11 @@
 #define JALOUSIEITEM_H
 
 #include <QWidget>
-#include <QColor>
+#include <QRgb>
 
 #include "jalousiepaint.h"
+#include "paletepaint.h"
+#include "paleteform.h"
 
 namespace Ui {
 class JalousieItem;
@@ -19,16 +21,21 @@ public:
     void addDebugMess(QString &message);
 
 private:
+    PaleteForm *colorPalete;
     JalousiePaint *jalousiePaint;
     QWidget *newWij;
 
     Ui::JalousieItem *ui;
     void *userContext;
     bool onLight;
-    QColor color;
+    QRgb currentColor;
+
+    void updateUiColorStyle(void);
 
 private slots:
     void valueReady(int value);
+    void getColor(QRgb color);
+
     void on_LightControl_clicked();
     void on_MoveLeft_clicked();
     void on_MoveRight_clicked();
@@ -37,8 +44,7 @@ private slots:
 signals:
     void posChange(void *uContext, int value);
     void move(void *uContext, bool left);
-    void lightOn(void *uContext, bool lightOn, QColor color);
-
+    void lightOn(void *uContext, bool lightOn, QRgb color);
 
 };
 
