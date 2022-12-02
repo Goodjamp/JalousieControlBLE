@@ -10,7 +10,7 @@ PaleteForm::PaleteForm(QWidget *parent) :
     palete = new PaletePaint(this);
     ui->centralwidget->setFixedSize(palete->size());
     palete->show();
-    connect(palete, &PaletePaint::updateColor, this, &PaleteForm::updateColor);
+    connect(palete, &PaletePaint::updateColor,       this, &PaleteForm::updateColor);
     connect(palete, &PaletePaint::finishColorUpdate, this, &PaleteForm::closePalete);
 }
 
@@ -22,5 +22,6 @@ PaleteForm::~PaleteForm()
 void PaleteForm::closePalete(QRgb color)
 {
     emit updateColor(color);
+    emit updateColorComplete();
     this->close();
 }

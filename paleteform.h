@@ -19,6 +19,7 @@ public:
 
 signals:
     void updateColor(QRgb targetColor);
+    void updateColorComplete();
 
 private:
     Ui::PaleteForm *ui;

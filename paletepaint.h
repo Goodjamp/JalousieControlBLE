@@ -25,7 +25,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *event);
 
 private:
-   QRgb getColor(int x, int height, int width);
+   QRgb getColor(int x, int y);
    bool mousePress;
 
 };

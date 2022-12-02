@@ -43,6 +43,12 @@ void JalousieItem::getColor(QRgb color)
     qDebug()<<"Rx color: "<<"R:"<<(0xFF & (color>>16))<<" G:"<<(0xFF & (color >> 8))<<" B:"<<(0xFF & color);
 }
 
+void JalousieItem::txColor(void)
+{
+    onLight = true;
+    lightOn(userContext, onLight, currentColor);
+}
+
 void JalousieItem::on_LightControl_clicked()
 {
     onLight = !onLight;
@@ -63,6 +69,7 @@ void JalousieItem::on_ColorControl_clicked()
 {
     colorPalete = new PaleteForm(this);
     connect(colorPalete, &PaleteForm::updateColor, this, &JalousieItem::getColor);
+    connect(colorPalete, &PaleteForm::updateColorComplete, this, &JalousieItem::txColor);
     colorPalete->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
     colorPalete->setWindowModality(Qt::ApplicationModal);
     colorPalete->show();

@@ -35,6 +35,7 @@ private:
 private slots:
     void valueReady(int value);
     void getColor(QRgb color);
+    void txColor(void);
 
     void on_LightControl_clicked();
     void on_MoveLeft_clicked();
