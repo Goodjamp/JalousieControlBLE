@@ -15,6 +15,7 @@
 #include "blecustomdevice.h"
 #include "blecustomservice.h"
 #include "jalousieitem.h"
+#include "customspiner.h"
 
 #define TARGET_BLE_DEVICE_NAME    "JalousieControl"
 
@@ -90,5 +91,6 @@ private:
     QVector<BleCustomDevice *> bleDevicesList;
     QVector<int> userContextList;
     QMap<int, JalousieItem *> jalousieList;
+    CustomSpiner *customSpiner;
 };
 #endif // MAINWINDOW_H

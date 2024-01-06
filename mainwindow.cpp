@@ -5,6 +5,8 @@
 #include "QString"
 #include "QVector"
 #include "QDebug"
+#include "QMovie"
+#include "QLabel"
 
 #include "QtBluetooth/QBluetoothDeviceDiscoveryAgent"
 #include "QtBluetooth/QLowEnergyController"
@@ -31,10 +33,9 @@ const QVector<quint128> characteristicsList = {
     {0x01, 0x0f, 0x20, 0x01, 0x0c, 0x0b, 0x0a, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01},
 };
 
-int temp = 0;
-
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
+    int temp = 0;
     ui->setupUi(this);
     connect(&bleCustomDiscovery, &BleCustomDiscovery::bleCustomDiscoveryDiscoveredComplete, this, &MainWindow::bleDevicesDiscoverComplete);
 
@@ -43,8 +44,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
      */
     jalousieList.insert(temp, new JalousieItem(static_cast<void *>(&temp), this));
     static_cast<QHBoxLayout*>(ui->jalListLayout->layout())->insertWidget(0,
-                                                                         jalousieList.value(temp));
-}
+                                                                         jalousieList.value(temp));}
 
 MainWindow::~MainWindow()
 {
@@ -55,20 +55,21 @@ void MainWindow::bleDevicesDiscoverComplete(BleCustomDiscovery::Status status, Q
 {
     if (status != BleCustomDiscovery::Ok) {
         qDebug()<<"Main: descovery complete error"<<status;
+    } else {
+        qDebug()<<"Main: device"<<devices.size();
+
+        if (devices.size() != 0) {
+            for (int k = 0; k < devices.size(); k++) {
+                userContextList.push_back(k);
+                bleDevicesList.push_back(new BleCustomDevice((void *)&userContextList.last(), devices[k], servicesList, this));
+                connect(bleDevicesList.last(), &BleCustomDevice::receiveData, this, &MainWindow::deviceReceiveData);
+                connect(bleDevicesList.last(), &BleCustomDevice::connectionStateChange, this, &MainWindow::deviceConnectionStateChange);
+                bleDevicesList.last()->connectToDevice();
+            }
+        }
     }
 
-    qDebug()<<"Main: device"<<devices.size();
-
-    if (devices.size() == 0) {
-        return;
-    }
-    for (int k = 0; k < devices.size(); k++) {
-        userContextList.push_back(k);
-        bleDevicesList.push_back(new BleCustomDevice((void *)&userContextList.last(), devices[k], servicesList, this));
-        connect(bleDevicesList.last(), &BleCustomDevice::receiveData, this, &MainWindow::deviceReceiveData);
-        connect(bleDevicesList.last(), &BleCustomDevice::connectionStateChange, this, &MainWindow::deviceConnectionStateChange);
-        bleDevicesList.last()->connectToDevice();
-    }
+    delete customSpiner;
 }
 
 void MainWindow::deviceReceiveData(void *uContext,
@@ -182,6 +183,8 @@ void MainWindow::jalItemLightOn(void *uContext, bool lightOn, QRgb color){
 
 void MainWindow::on_AddDevicesButton_clicked()
 {
+    QSize spinerSize(300, 300);
+
     qDebug()<<"Main: -----Start scaning--------";
     bleDevicesList.clear();
     userContextList.clear();
@@ -191,5 +194,8 @@ void MainWindow::on_AddDevicesButton_clicked()
     }
     jalousieList.clear();
 
+    customSpiner = new CustomSpiner(this, spinerSize,
+                                    centralWidget()->width() / 2 - spinerSize.width() / 2,
+                                    centralWidget()->height() / 2 - spinerSize.height() / 2);
     bleCustomDiscovery.startDiscovered(deviceMetaData, 5000);
 }
