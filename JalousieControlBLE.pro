@@ -21,24 +21,29 @@ SOURCES += \
     blecustomdevice.cpp \
     blecustomdiscovery.cpp \
     blecustomservice.cpp \
+    customspiner.cpp \
     jalousieitem.cpp \
     jalousiepaint.cpp \
     main.cpp \
     mainwindow.cpp \
     paleteform.cpp \
-    paletepaint.cpp
+    paletepaint.cpp \
+    timespiner.cpp
 
 HEADERS += \
     blecustomdevice.h \
     blecustomdiscovery.h \
     blecustomservice.h \
+    customspiner.h \
     jalousieitem.h \
     jalousiepaint.h \
     mainwindow.h \
     paleteform.h \
-    paletepaint.h
+    paletepaint.h \
+    timespiner.h
 
 FORMS += \
+    customspiner.ui \
     jalousieitem.ui \
     mainwindow.ui \
     paleteform.ui
